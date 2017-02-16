@@ -9,6 +9,9 @@
 #include "opencv2/opencv.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
 #include "blurDetection.h"
+#include "modes.h"
+
+extern int mode;
 
 #define BLUR_THRESHOLD 50
 
@@ -41,7 +44,9 @@ bool blur_detection(Mat *image)
 		result = "Blur";
 		output = false;
 	}
-	putText(*image, result+ ": " + to_string(variance), Point(10, 30), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(0,0,255));
+	
+	if(mode != RUNNING)
+		putText(*image, result+ ": " + to_string(variance), Point(10, 30), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(0,0,255));
 		
 	return output;
 }

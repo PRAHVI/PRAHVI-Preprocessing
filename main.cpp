@@ -11,12 +11,16 @@
 #include "opencv2/opencv.hpp"
 #include "blurDetection.h"
 #include "featureMatching.h"
+#include "modes.h"
+
+int mode;
 
 using namespace cv;
 using namespace std;
 
 int main()
 {
+	mode = DEVELOPING;
 	// Open the first camera attached to your computer
 	VideoCapture cap(0);
 	
