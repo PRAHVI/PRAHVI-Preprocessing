@@ -1,6 +1,6 @@
 //
 //  blurDetection.cpp
-//  camera_blur
+//  prahvi
 //
 //  Created by Yang Li on 2/12/17.
 //  Copyright © 2017 Yang Li. All rights reserved.
@@ -11,12 +11,13 @@
 #include "blurDetection.h"
 #include "modes.h"
 
-extern int mode;
-
-#define BLUR_THRESHOLD 50
-
 using namespace cv;
 using namespace std;
+
+// threshold value to determine if the image is blur
+#define BLUR_THRESHOLD 50
+
+//extern int mode;
 
 double variance_of_laplacian(Mat *gray)
 {
@@ -31,18 +32,19 @@ double variance_of_laplacian(Mat *gray)
 
 bool blur_detection(Mat *image)
 {
+	int mode;
 	Mat gray;
 	cvtColor(*image, gray, COLOR_BGR2GRAY);
 	string result = "Not Blur";
 	double variance;
-	bool output = true;
+	bool output = false;
 	
 	variance = variance_of_laplacian(&gray);
 	
 	if(variance < BLUR_THRESHOLD)
 	{
 		result = "Blur";
-		output = false;
+		output = true;
 	}
 	
 	if(mode != RUNNING)

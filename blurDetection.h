@@ -1,6 +1,6 @@
 //
 //  blurDetection.h
-//  camera_blur
+//  prahvi
 //
 //  Created by Yang Li on 2/12/17.
 //  Copyright © 2017 Yang Li. All rights reserved.
