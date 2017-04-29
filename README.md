@@ -9,3 +9,4 @@ for tesseract:
 -llept -ltesseract
 
 Need to parse the IDF scores
+Still needs to figure out why tesseract black list is not working
