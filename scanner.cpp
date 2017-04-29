@@ -2,173 +2,149 @@
 //  scanner.cpp
 //  prahvi
 //
-//  Created by Yang Li on 4/9/17.
-//  Copyright © 2017 Yang Li. All rights reserved.
+//  Created by Yang Li on 4/29/17.
+//  Copyright © 2017 Portable Reading Assistant Headset for the Visually Impaired. All rights reserved.
 //
+//	Description: module that extract the text area from the image
+//		such that the result will be like a scanned document
 
-#include <iostream>
 #include <algorithm>
 #include <vector>
-#include "opencv2/opencv.hpp"
+#include "scanner.hpp"
 
-using namespace cv;
-using namespace std;
-
-
-// compare 2 points based on the sum of the coordinate
-bool comparePointSum(Point a, Point b)
+//	Function: comaprePointSum
+//	Description: compare 2 points based on the sum of the coordinate
+//		return true if the first point is smaller than the second point
+bool comparePointSum(cv::Point a, cv::Point b)
 {
-	return a.x+a.y < b.x+b.y;
+	return a.x + a.y < b.x + b.y;
+}
+//	Function: comaprePointDifference
+//	Description: compare 2 points based on the difference of the coordinate
+//		return true if the first point is smaller than the second point
+bool comparePointDifference(cv::Point a, cv::Point b)
+{
+	return a.y - a.x < b.y - b.x;
 }
 
-// compare 2 points based on the difference of the coordinate
-bool comparePointDifference(Point a, Point b)
+//	Function: compareArea
+//	Description: compare 2 points based on the contor area
+//		return true if the first point is larger than the second point
+bool compareArea(std::vector<cv::Point> a, std::vector<cv::Point> b)
 {
-	//return abs(a.x-a.y) < abs(b.x-b.y);
-	return a.y-a.x < b.y-b.x;
+	return contourArea(a) > contourArea(b);
 }
 
-bool compareArea(vector<Point> a, vector<Point> b)
+//	Function: getDistance
+//	Description: return the distance between two points
+int getDistance(cv::Point a, cv::Point b)
 {
-	return contourArea(a)>contourArea(b);
+	return sqrt(pow((double)b.x - (double)a.x, 2) + pow((double)b.y - (double)a.y, 2));
 }
 
-int getDistance(Point a, Point b)
-{
-	return sqrt(pow(b.x-a.x,2)+pow(b.y-a.y,2));
-}
-
-void sort_contours(vector<vector<Point>> &contours)
+//	Function: sortContours
+//	Description: sort the contours based on the contour area
+//		in descending order
+void sortContours(std::vector<std::vector<cv::Point>> &contours)
 {
 	sort(contours.begin(), contours.end(), compareArea);
 }
 
-int mainTest()
+//	Function: getTextArea
+//	Description: extract the text area from the image
+//		Based on find the largest contour with 4 sides in the image
+//		this function also transform the result found and rectify it
+cv::Mat getTextArea(cv::Mat &image)
 {
-	//string name = "/Users/Youngestyle/Downloads/document-scanner-master/test_s1.jpg";
-	string name = "/Users/Youngestyle/Desktop/IMG_9121.JPG";
-	Mat image=imread(name);
 	
+	// convert to grayscale and blur
+	cv::Mat imageGray;
+	cvtColor(image, imageGray, CV_BGR2GRAY);
 	
-	// resize for display purpose
-	// TODO - need to be removed
-	//resize(image, image, Size(1500, 880));
+	cv::Mat blurred;
+	GaussianBlur(imageGray, blurred, cv::Size(5, 5), 0);
 	
-	// creating copy of original image
-	Mat orig = image;
-	
-	// convert to grayscale and blur to smooth
-	Mat gray;
-	cvtColor(image, gray, CV_BGR2GRAY);
-	
-	Mat blurred;
-	GaussianBlur(gray, blurred, Size(5, 5), 0);
-	
-	// apply Canny Edge Detection
-	Mat edged;
+	// apply Canny Edge Detection to find the edges
+	cv::Mat edged;
 	Canny(blurred, edged, 0, 50);
-	Mat orig_edged = edged;
 	
-	//imshow("edged",edged);
-	//waitKey(0);
-	//destroyAllWindows();
+	//	find the contours in the edged image
+	std::vector<std::vector<cv::Point>> contours;
+	std::vector<cv::Vec4i> hierarchy;
 	
-	// find the contours in the edged image, keeping only the
-	// largest ones, and initialize the screen contour
-	vector<vector<Point>> contours;
-	vector<Vec4i> hierarchy;
-	findContours(edged, contours, hierarchy, RETR_LIST, CHAIN_APPROX_NONE);
-	//contours = sorted(contours, key=cv2.contourArea, reverse=True);
-	sort_contours(contours);
+	findContours(edged, contours, hierarchy, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
 	
-	//vector<vector<Point> > approx;
-	vector<Point> screen_contours;
-	vector<Point> approx;
+	//	sort the contours in descending order
+	sortContours(contours);
+	
+	//	initialize the screen contour
+	std::vector<cv::Point> screenContour;
+	std::vector<cv::Point> approx;
+	
+	//	set screen contour to the largest contour with 4 sides
 	for(int i = 0; i < contours.size(); i++)
 	{
 		double peri = arcLength(contours[i], true);
 		
-		approxPolyDP(Mat(contours[i]), approx, 0.02*peri,true);
+		approxPolyDP(cv::Mat(contours[i]), approx, 0.02*peri,true);
+		
 		if(approx.size() == 4)
 		{
-			screen_contours = approx;
+			screenContour = approx;
 			break;
 		}
 	}
-	vector<vector<Point>> screen;
-	screen.push_back(screen_contours);
-	//drawContours(image, screen, -1, Scalar(128,255,255));
-	//drawContours(image, contours, -1, Scalar(255,0,0));
-	//imwrite( name+"contours.png", image );
 	
-	/*
-	 for( int idx = 0; idx >= 0; idx = hierarchy[idx][0] )
-	{
-		Scalar color( rand()&255, rand()&255, rand()&255 );
-		drawContours( image, contours, idx, color, CV_FILLED, 8, hierarchy );
-	}
-	 */
-	//imshow("contours", image);
-	//imwrite( name+"contours.png", image );
-	//waitKey(0);
-	//destroyAllWindows();
+	std::vector<std::vector<cv::Point>> screen;
+	screen.push_back(screenContour);
 	
-	Mat lambda( 2, 4, CV_32FC1 );
-	lambda = Mat::zeros( image.rows, image.cols, image.type() );
-	Mat dst;
-	Point2f inputQuad[4];
-	Point2f outputQuad[4];
+	//	initialize transformation
+	cv::Mat lambda(2, 4, CV_32FC1);
+	lambda = cv::Mat::zeros(image.rows, image.cols, image.type());
 	
-	// find the max dimension of the crop
-	Point tl, tr, br, bl;
+	//	input and output coordinates
+	cv::Point2f inputQuad[4];
+	cv::Point2f outputQuad[4];
 	
-	tl = *min_element(screen_contours.begin(), screen_contours.end(), comparePointSum);
-	br = *max_element(screen_contours.begin(), screen_contours.end(), comparePointSum);
+	//	find the max dimension of the crop
+	cv::Point topLeft, topRight, bottomRight, bottomLeft;
 	
-	tr = *min_element(screen_contours.begin(), screen_contours.end(), comparePointDifference);
-	bl = *max_element(screen_contours.begin(), screen_contours.end(), comparePointDifference);
+	//	the top left point has the smallest sum
+	topLeft = *min_element(screenContour.begin(), screenContour.end(), comparePointSum);
 	
+	//	the bottom right point has the largest sum
+	bottomRight = *max_element(screenContour.begin(), screenContour.end(), comparePointSum);
 	
-	//tl = Point2f(277,176);
-	//tr = Point2f(1261,176);
-	//br = Point2f(1404,724);
-	//bl = Point2f(213,777);
-	/*
-	circle(image, tl, 50, Scalar(0,255,0),10);
-	circle(image, tr, 50, Scalar(255,0,0),10);
-	circle(image, br, 50, Scalar(0,255,0),10);
-	circle(image, bl, 50, Scalar(0,255,0),10);
-	imwrite( name+"corners.png", image );
-	//imshow("contours", image);
-	*/
-	inputQuad[0] = tl;
-	inputQuad[1] = tr;
-	inputQuad[2] = br;
-	inputQuad[3] = bl;
+	//	the top right point has the smallest difference
+	topRight = *min_element(screenContour.begin(), screenContour.end(), comparePointDifference);
 	
-	int width = max(getDistance(tl, tr), getDistance(bl, br));
-	int height = max(getDistance(tl, bl), getDistance(tr, br));
+	//	the bottom left point has the largest difference
+	bottomLeft = *max_element(screenContour.begin(), screenContour.end(), comparePointDifference);
+
+	//	set input coordinates
+	inputQuad[0] = topLeft;
+	inputQuad[1] = topRight;
+	inputQuad[2] = bottomRight;
+	inputQuad[3] = bottomLeft;
 	
+	//	the dimension of the output is based on the input
+	//	1:1 ratio
+	int width = std::max(getDistance(topLeft, topRight), getDistance(bottomLeft, bottomRight));
+	int height = std::max(getDistance(topLeft, bottomLeft), getDistance(topRight, bottomRight));
 	
-	outputQuad[0] = Point2f(0,0);
-	outputQuad[1] = Point2f(width-1, 0);
-	outputQuad[2] = Point2f(width-1, height-1);
-	outputQuad[3] = Point2f(0, height-1);
+	//	the output coordinates is based on the output dimention
+	outputQuad[0] = cv::Point2f(0,0);
+	outputQuad[1] = cv::Point2f(width-1, 0);
+	outputQuad[2] = cv::Point2f(width-1, height-1);
+	outputQuad[3] = cv::Point2f(0, height-1);
 	
-	lambda = getPerspectiveTransform(inputQuad,outputQuad);
-	warpPerspective(image, dst, lambda,Size(width,height));
+	//	set up transformation
+	lambda = getPerspectiveTransform(inputQuad, outputQuad);
 	
-	//ret,th1 = cv2.threshold(dst,127,255,cv2.THRESH_BINARY)
-	//double th1 = threshold(dst, dst, 127, 255, THRESH_BINARY);
+	cv::Mat output;
 	
-	//double th2 = adaptiveThreshold(dst, dst, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY,11,2);
-	//th3 = cv2.adaptiveThreshold(dst,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
-								cv2.THRESH_BINARY,11,2)
-	//ret2,th4 = cv2.threshold(dst,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-	imwrite( name+".png", dst );
-	//imshow("crop", dst);
-	//waitKey(0);
-	//destroyAllWindows();
+	//	apply transformation
+	warpPerspective(image, output, lambda, cv::Size(width,height));
 	
-	return 0;
-	}
+	return output;
+}

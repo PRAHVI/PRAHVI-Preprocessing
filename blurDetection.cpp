@@ -2,53 +2,46 @@
 //  blurDetection.cpp
 //  prahvi
 //
-//  Created by Yang Li on 2/12/17.
-//  Copyright © 2017 Yang Li. All rights reserved.
+//  Created by Yang Li on 4/29/17.
+//  Copyright © 2017 Portable Reading Assistant Headset for the Visually Impaired. All rights reserved.
 //
+//	Description: module to check whether the image (Mat object) received is blur
 
-#include "opencv2/opencv.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
-#include "blurDetection.h"
-#include "modes.h"
+#include "blurDetection.hpp"
 
-using namespace cv;
-using namespace std;
-
-// threshold value to determine if the image is blur
+//	threshold value to determine if the image is blur
 #define BLUR_THRESHOLD 50
 
-//extern int mode;
-
-double variance_of_laplacian(Mat *gray)
+//	Function: varianceOfLaplacian
+//	Description: generate the variance of Laplacian for the matrix received
+double varianceOfLaplacian(cv::Mat &imageGray)
 {
-	Mat laplacian_result;
-	Scalar mean;
-	Scalar stddev;
+	cv::Mat laplacian_result;
+	cv::Scalar mean;
+	cv::Scalar stddev;
 	
-	Laplacian(*gray, laplacian_result, CV_64F);
+	Laplacian(imageGray, laplacian_result, CV_64F);
 	meanStdDev(laplacian_result, mean, stddev);
+	
 	return pow((double) stddev[0],2);
 }
 
-bool blur_detection(Mat *image)
+//	Function: isBlur
+//	Description: determine whether image received is blur or not
+//		If the variance of Laplacian of the grayscalled image is less than the threshold
+//		Then the image is blurred
+bool isBlur(cv::Mat &image)
 {
-	int mode;
-	Mat gray;
-	cvtColor(*image, gray, COLOR_BGR2GRAY);
-	string result = "Not Blur";
+	cv::Mat imageGray;
 	double variance;
-	bool output = false;
 	
-	variance = variance_of_laplacian(&gray);
+	cvtColor(image, imageGray, cv::COLOR_BGR2GRAY);
+	variance = varianceOfLaplacian(imageGray);
 	
 	if(variance < BLUR_THRESHOLD)
 	{
-		result = "Blur";
-		output = true;
+		return true;
 	}
-	
-	if(mode != RUNNING)
-		putText(*image, result+ ": " + to_string(variance), Point(10, 30), FONT_HERSHEY_SIMPLEX, 0.8, Scalar(0,0,255));
-		
-	return output;
+	return false;
 }
