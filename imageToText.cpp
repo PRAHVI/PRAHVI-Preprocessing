@@ -13,6 +13,54 @@
 #include "imageToText.hpp"
 
 
+//	Function: replaceString
+//	Description: replace all "toReplace" with "replaceWith" in string "s"
+std::string replaceString(std::string &text, const std::string &toReplace, const std::string &replaceWith)
+{
+	int location = 0;
+	int replaceWithLength = replaceWith.length();
+	
+	while((location = (int) text.find(toReplace, location)) != std::string::npos)
+	{
+		text.replace(text.find(toReplace), toReplace.length(), replaceWith);
+		location += replaceWithLength;
+	}
+	return text;
+}
+
+//	Function: replaceLigatures
+//	Description: replace the ligatures with non-ligatures
+std::string replaceLigatures(std::string text)
+{
+	// list of ligatures and non ligatures
+	// the list is too long, and it is making the system really slow
+	//std::vector<std::string> ligatures = {"Ꜳ", "ꜳ", "Æ", "æ", "Ꜵ",
+	//	"ꜵ", "Ꜷ", "ꜷ", "Ꜹ", "ꜹ",
+	//	"Ꜻ", "ꜻ", "Ꜽ", "ꜽ", "ﬀ",
+	//	"ﬃ", "ﬄ", "ﬁ", "ﬂ", "Œ",
+	//	"œ", "Ꝏ", "ꝏ", "ẞ", "ß",
+	//	"ﬆ", "ﬅ", "Ꜩ", "ꜩ", "ᵫ",
+	//	"Ꝡ", "ꝡ"};
+	//std::vector<std::string> nonLigatures = {"AA", "aa", "AE", "ae", "AO",
+	//	"ao", "AU", "au", "AV", "av",
+	//	"AV", "av", "AY", "ay", "ff",
+	//	"ffi", "ffl", "fi", "fl", "OE",
+	//	"oe", "OO", "oo", "fs", "fz",
+	//	"st", "ft", "TZ", "tz", "ue",
+	//	"VY", "vy"};
+	
+	// thus a shorter list of common ligatures are searched and replaced
+	std::vector<std::string> ligatures = {"ﬀ", "ﬃ", "ﬄ", "ﬁ", "ﬂ","ﬆ", "ﬅ"};
+	std::vector<std::string> nonLigatures = {"ff", "ffi", "ffl", "fi", "fl", "st", "ft"};
+		
+	for(int i = 0; i < ligatures.size(); i++)
+	{
+		text = replaceString(text, ligatures[i], nonLigatures[i]);
+	}
+	
+	return text;
+}
+
 //	Function: imageToText
 //	Description: receive a Mat and pass the Mat to OCR to detect the text
 //		The border of the image (Mat) is removed to reduce noise
@@ -61,6 +109,8 @@ std::string imageToText(cv::Mat &image)
 	
 	// destroy used object and release memory
 	api->End();
+	
+	outText = replaceLigatures(outText);
 	
 	return outText;
 }
