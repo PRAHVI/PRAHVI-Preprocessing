@@ -70,7 +70,17 @@ std::string prahvi::getNewText(int &result)
 	//	TODO - uncomment after add IDF
 	//_tfidf.resetTerms();
 	//_tfidf.addTerms(_currentText);
-	result = SUCCESS;
+	
+	result = EMPTY;
+	
+	for(int i = 0; i < _currentText.length(); i++)
+	{
+		if(!isspace(_currentText[i]))
+		{
+			result = SUCCESS;
+		}
+	}
+	
 	return _currentText;
 }
 
