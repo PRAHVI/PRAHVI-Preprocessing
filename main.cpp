@@ -22,6 +22,10 @@ int main(int argc, const char * argv[]) {
 	{
 		std::cout << text << std::endl;
 	}
+	else if(result == EMPTY)
+	{
+		std::cout << "Empty image, try again" << std::endl;
+	}
 	
 	return 0;
 }
