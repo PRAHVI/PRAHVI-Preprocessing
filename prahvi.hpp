@@ -13,7 +13,7 @@
 #include <opencv2/opencv.hpp>
 #include "tfidf.hpp"
 
-enum ProcessResult {SUCCESS, BLUR, SIMILAR};
+enum ProcessResult {SUCCESS, BLUR, SIMILAR, EMPTY};
 
 class prahvi
 {
