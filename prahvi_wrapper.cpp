@@ -1,3 +1,4 @@
+#include <iostream>
 #include "prahvi.hpp"
 #include "prahvi_wrapper.h" 
 
@@ -5,18 +6,29 @@
 #include <opencv2/core.hpp>
 
 using namespace cv;
+//using namespace std;
 
 Mat fromNDArrayToMat(PyObject* o); 
+
+// Need to declare text string bc passing char pointers can be emtpy after pv instance is out of scope
+std::string text;
 
 extern "C" {
 	prahvi* Prahvi_new(){ return new prahvi(); }
 	ProcessResult Prahvi_getNewText(prahvi* pv, PyObject* img){ 
 		cv::Mat cvImage = fromNDArrayToMat(img);
 
-		return pv->getNewText(cvImage);
+		//cout << "Image width: " << cvImage.size().width << " Image height: " << cvImage.size().height << endl;
+		ProcessResult res = pv->getNewText(cvImage);
+		//cout << "Text: \n" << pv->getText() << endl;
+		return res;
 	}
 
-	const char* Prahvi_getText(prahvi* pv) { return pv->getText().c_str(); }
+	const char* Prahvi_getText(prahvi* pv) { 
+		//cout << "Text: \n" << pv->getText() << endl;
+		text = pv->getText();
+		return text.c_str(); }
+	
 }
 
 //===================    MACROS    =================================================================
