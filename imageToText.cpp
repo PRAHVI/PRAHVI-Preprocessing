@@ -83,8 +83,8 @@ std::string imageToText(cv::Mat &image)
 	// this reduces the noise from the background
 	// can use fixed pixels or with respect to width and height
 	
-	int offsetX = 10;//image.size().width*0.01;
-	int offsetY = 10;//image.size().height*0.01;
+	int offsetX = image.size().width*0.05;
+	int offsetY = image.size().height*0.05;
 	
 	cv::Rect roi;
 	roi.x = offsetX;
