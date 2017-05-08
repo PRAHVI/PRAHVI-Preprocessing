@@ -11,7 +11,6 @@
 #define prahvi_hpp
 
 #include <opencv2/opencv.hpp>
-#include "tfidf.hpp"
 
 enum ProcessResult {SUCCESS, BLUR, SIMILAR, EMPTY};
 
@@ -20,15 +19,12 @@ class prahvi
 public:
 	prahvi();
 	std::string getText();
-	std::string getKeyword(int n=1);
-	std::string getNewText(int &result);
+	ProcessResult getNewText(cv::Mat &img);
 	
 private:
 	cv::Mat _previousImage;
 	cv::Mat _currentImage;
 	std::string _currentText;
-	//	TODO - uncomment after add IDF
-	//tfidf _tfidf;
 };
 
 #endif /* prahvi_hpp */

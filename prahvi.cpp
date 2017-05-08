@@ -10,7 +10,6 @@
 //		other program can create and call this class to get corresponding results
 
 #include "prahvi.hpp"
-#include "getImage.hpp"
 #include "blurDetection.hpp"
 #include "similarityDetection.hpp"
 #include "imageToText.hpp"
@@ -39,15 +38,12 @@ std::string prahvi::getText()
 //		if the new image is blur, it will terminate
 //		otherwise, it will extract the text area
 //		and compare to the previous text area
-std::string prahvi::getNewText(int &result)
+ProcessResult prahvi::getNewText(cv::Mat &newImage)
 {
-	cv::Mat newImage = getImage();
-	
 	//	check if the new image is blurred
 	if(isBlur(newImage))
 	{
-		result = BLUR;
-		return "";
+		return BLUR;
 	}
 	
 	_previousImage = _currentImage;
@@ -66,11 +62,7 @@ std::string prahvi::getNewText(int &result)
 	//	convert the image to text
 	_currentText = imageToText(_currentImage);
 	
-	//	reset TF-IDF and generate the score for the new document
-	//	TODO - uncomment after add IDF
-	//_tfidf.resetTerms();
-	//_tfidf.addTerms(_currentText);
-	
+	ProcessResult result;
 	result = EMPTY;
 	
 	for(int i = 0; i < _currentText.length(); i++)
@@ -80,12 +72,6 @@ std::string prahvi::getNewText(int &result)
 			result = SUCCESS;
 		}
 	}
-	
-	return _currentText;
-}
 
-std::string prahvi::getKeyword(int n)
-{
-	//	TODO - uncomment after add IDF
-	return "";//_tfidf.getTerm(n);
+	return result;
 }

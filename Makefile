@@ -1,43 +1,23 @@
-CC=g++
-PROG=executable
-OBJS=blurDetection.o boundingBoxDetection.o getImage.o imageToText.o \
-	   	main.o prahvi.o scanner.o similarityDetection.o tfidf.o
+CC=g++ 
+TARGET=libprahvi
+OBJS=blurDetection.o boundingBoxDetection.o imageToText.o \
+	 	prahvi.o scanner.o similarityDetection.o prahvi_wrapper.o
 CFLAGS= -g -std=c++11 -Wall -pedantic $(shell pkg-config --cflags opencv tesseract)
-LDFLAGS= $(shell pkg-config --libs opencv tesseract)
+LDFLAGS= -L$(PYTHON_LIB) -lpython$(PYTHON_VERSION) $(shell pkg-config --libs opencv tesseract)
+PYTHON_VERSION=2.7
+PYTHON_INCLUDE=$(VIRTUAL_ENV)/include/python$(PYTHON_VERSION)
+PYTHON_LIB=$(VIRTUAL_ENV)/lib/python$(PYTHON_VERSION)/config
 
 .PHONY: all clean
 
-$(PROG): $(OBJS)
-	$(CC) -o $(PROG) $(OBJS) $(LDFLAGS)
+$(TARGET).so: $(OBJS)
+	$(CC) -shared  $(OBJS) $(LDFLAGS) -o $(TARGET).so
 
 %.o: %.cpp
-	$(CC) -c $(CFLAGS) $<
+	$(CC) -I$(PYTHON_INCLUDE) -fPIC -c $(CFLAGS) $<
 
 all: $(PROG)
 
 clean:
 	rm -f $(OBJS) $(PROG)
 
-#/all: executable
-#/
-#/executable: $(OBJECTS)
-#/	$(CC) $(CPPFLAGS) $(LDLIBS) -o executable $(OBJECTS)
-#/
-#/main.o: main.cpp
-#/
-#/blurDetection.o: blurDetection.cpp blurDetection.hpp
-#/
-#/boundingBoxDetection.o: boundingBoxDetection.cpp boundingBoxDetection.hpp
-#/
-#/getImage.o: getImage.cpp getImage.hpp
-#/
-#/imageToText.o: imageToText.cpp imageToText.hpp
-#/
-#/prahvi.o: prahvi.cpp prahvi.hpp
-#/
-#/scanner.o: scanner.cpp scanner.hpp
-#/
-#/similarityDetection.o: similarityDetection.cpp similarityDetection.hpp
-#/
-#/tfidf.o: tfidf.cpp tfidf.hpp
-#/
