@@ -62,7 +62,7 @@ cv::Mat getTextArea(cv::Mat &image)
 	cvtColor(image, imageGray, CV_BGR2GRAY);
 	
 	cv::Mat blurred;
-	GaussianBlur(imageGray, blurred, cv::Size(11, 11), 0);
+	GaussianBlur(imageGray, blurred, cv::Size(5, 5), 0);
 	
 	// apply Canny Edge Detection to find the edges
 	cv::Mat edged;
